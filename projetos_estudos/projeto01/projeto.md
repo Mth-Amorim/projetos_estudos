@@ -11,7 +11,7 @@ Criar um programa que permita:
 
 ## **Cosntrução:** 
 
-O Projeto vamos construir usando apenas python .... as atividades vão ficar gravadas em json assim podemos converter elas em excel ou outro formato se quisermos. para esse app vamos usar somente dois arquivos python onde um controla as funções da aplicação o [funcoes.py](projetos_estudos\projeto01\funcoes.py),  e outro controla a interface da aplicação o [app.py](projetos_estudos\projeto01\app.py)
+O Projeto vamos construir usando apenas python .... as atividades vão ficar gravadas em json assim podemos converter elas em excel ou outro formato se quisermos. para esse app vamos usar somente dois arquivos python onde um controla as funções da aplicação o [funcoes.py](funcoes.py),  e outro controla a interface da aplicação o [app.py](app.py)
 
 
 ## Requisitos: 
