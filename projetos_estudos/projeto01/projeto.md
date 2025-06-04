@@ -13,7 +13,10 @@ Criar um programa que permita:
 
 O Projeto vamos construir usando apenas python .... as atividades vão ficar gravadas em json assim podemos converter elas em excel ou outro formato se quisermos. para esse app vamos usar somente dois arquivos python onde um controla as funções da aplicação o [funcoes.py](funcoes.py),  e outro controla a interface da aplicação o [app.py](app.py)
 
+Vamos precisar de algumas funções e recursos listados abaixo: 
+- [ ] - Conectar no banco
+- [ ] - CRUDS atividades 
 
 ## Requisitos: 
-* tinydb 
-* 
+* tinydb - Dados 
+* customrkinter - Interface 
