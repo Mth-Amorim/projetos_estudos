@@ -23,6 +23,7 @@ notebook = "^7.4.3"
 
 [tool.poetry.group.projeto01.dependencies]
 tinydb = "^4.8.2"
+customtkinter = "^5.2.2"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
