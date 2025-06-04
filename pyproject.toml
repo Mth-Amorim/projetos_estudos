@@ -6,13 +6,19 @@ authors = [
     {name = "Matheus",email = "mth_p_amorim+git@hotmail.com"}
 ]
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.13,<4.0"
 dependencies = [
 ]
 
 [tool.poetry]
-packages = [{include = "projetos_estudos", from = "src"}]
+packages = [{include = "projetos_estudos", from = "."}]
 
+
+[tool.poetry.group.dev.dependencies]
+blue = "^0.9.1"
+isort = "^6.0.1"
+taskipy = "^1.14.1"
+notebook = "^7.4.3"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
