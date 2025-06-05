@@ -1,98 +1,134 @@
 # todo_app.py
-import customtkinter
 import customtkinter as ctk
+from projetos_estudos.projeto01.funcoes import GerenciadorTarefas  
 from tinydb import TinyDB, Query
 from tkinter import messagebox
+from uuid import uuid4
 
-ARQUIVO_DB = "tarefas.json"      # arquivo onde o TinyDB grava os dados
 
-class ListaTarefas(ctk.CTkScrollableFrame):
-    """Frame que exibe a lista; recebe o TinyDB injetado pelo App."""
-    def __init__(self, master, db: TinyDB):
+GERENCIADOR = GerenciadorTarefas()
+
+class EntradaTarefaFrame(ctk.CTkFrame):
+    def __init__(self, master, adicionar_callback):
         super().__init__(master)
+
+        self.adicionar_callback = adicionar_callback
+        self.columnconfigure(0, weight=1)
+
+        self.entrada = ctk.CTkEntry(self, placeholder_text="Nova tarefa")
+        self.entrada.grid(row=0, column=0, padx=(0, 10), pady=5, sticky="ew")
+
+        self.botao_add = ctk.CTkButton(self, text="+", width=40, command=self.adicionar_tarefa)
+        self.botao_add.grid(row=0, column=1, pady=5)
+
+    def adicionar_tarefa(self):
+        nome = self.entrada.get().strip()
+        if nome:
+            self.adicionar_callback(nome)
+            self.entrada.delete(0, "end")
+        else:
+            messagebox.showwarning("Aviso", "Digite uma tarefa válida.")
+
+
+class FiltrosTarefa(ctk.CTkFrame):
+    def __init__(self, master, callback_reload):
+        super().__init__(master)
+
+        self.callback_reload = callback_reload
+
+        self.filtro_concluido = ctk.CTkCheckBox(self, text="Concluído", command=self.callback_reload)
+        self.filtro_concluido.grid(row=0, column=0, padx=5, sticky="w")
+
+        self.filtro_pendente = ctk.CTkCheckBox(self, text="Pendente", command=self.callback_reload)
+        self.filtro_pendente.grid(row=0, column=1, padx=5, sticky="w")
+
+    def is_concluido_ativo(self):
+        return self.filtro_concluido.get()
+
+    def is_pendente_ativo(self):
+        return self.filtro_pendente.get()
+
+
+class TarefaFrame(ctk.CTkFrame):
+    def __init__(self, master, tarefa, db, callback_reload):
+        super().__init__(master)
+
+        self.tarefa = tarefa
         self.db = db
+        self.callback_reload = callback_reload
 
-        self.label = ctk.CTkLabel(self, text="Lista de Tarefas")
-        self.label.pack(pady=(10, 4))
+        self.columnconfigure(0, weight=1)
 
-        # Listbox moderno do CustomTkinter (>= 5.x).  Para versões 4.x use ctk.CTkTextbox.
-        self.listbox = customtkinter.CTkTextbox(self, width=280, height=230)
-        self.listbox.configure(state="disabled")
+        self.label = ctk.CTkLabel(self, text=tarefa["nome"], anchor="w")
+        self.label.grid(row=0, column=0, padx=10, sticky="ew")
 
-        self.atualizar()           # carrega tarefas quando o frame nasce
+        self.select_status = ctk.CTkOptionMenu(self, values=["Pendente", "Concluído"], command=self.atualizar_status)
+        self.select_status.set(tarefa["status"])
+        self.select_status.grid(row=0, column=1, padx=5)
 
-    def atualizar(self):
-        """Recarrega a lista a partir do banco."""
-        self.listbox.delete(0, ctk.END)
-        for doc in self.db.table("tarefas").all():
-            self.listbox.insert(ctk.END, f"- {doc['nome']}")
+        self.botao_excluir = ctk.CTkButton(self, text="🗑️", width=40, command=self.excluir)
+        self.botao_excluir.grid(row=0, column=2, padx=5)
 
+    def atualizar_status(self, novo_status):
+        GERENCIADOR.atualizar_status(self.tarefa["id"], novo_status)
+        self.callback_reload()
 
-class MenuPrincipal(ctk.CTkFrame):
-    """Frame com o formulário para adicionar tarefa."""
-    def __init__(self, master, on_add_callback):
-        super().__init__(master)
-
-        self.label = ctk.CTkLabel(self, text="Nova tarefa")
-        self.entrada = ctk.CTkEntry(self, width=250, placeholder_text="Digite a tarefa…")
-        self.botao_add = ctk.CTkButton(self, text="Adicionar", command=self._clicou_adicionar)
-
-        self.entrada.grid(row=0, column=0, padx=10, pady=10)
-        self.botao_add.grid(row=0, column=1, padx=10, pady=10)
-        # função fornecida pelo App que realmente grava no banco
-        self.on_add = on_add_callback
-
-    def _clicou_adicionar(self):
-        tarefa = self.entrada.get().strip()
-        if not tarefa:
-            messagebox.showwarning("Aviso", "Digite uma tarefa válida!")
-            return
-        self.on_add(tarefa)          # grava no banco e atualiza lista
-        self.entrada.delete(0, ctk.END)
-
-
-class RowTarefa(ctk.CTkFrame):
-    """Representa uma linha de tarefa na lista; não usada neste exemplo."""
-    def __init__(self, master, tarefa: str):
-        super().__init__(master)
-
-        self.label = ctk.CTkLabel(self, text=tarefa)
-        self.label.pack(side="left", padx=10, pady=5)
-        
-        # Aqui poderiam ser adicionados botões para editar ou excluir a tarefa
+    def excluir(self):
+        GERENCIADOR.remover(self.tarefa["id"])
+        self.callback_reload()
 
 
 class App(ctk.CTk):
-    """Janela principal; coordena banco, frames e callbacks."""
     def __init__(self):
         super().__init__()
 
-        # ---------- janela ----------
         self.title("Gerenciador de Tarefas")
-        self.geometry("450x450")
-        self.grid_rowconfigure(1, weight=1)
-        self.grid_columnconfigure((0, 1), weight=1)
+        self.geometry("500x600")
+        self.resizable(False, False)
 
-        # ---------- banco ----------
-        self.db = TinyDB(ARQUIVO_DB)
-        self.tabela = self.db.table("tarefas")
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(2, weight=1)
 
-        # ---------- frames ----------
-        self.menu_principal = MenuPrincipal(self, self.adicionar_tarefa)
-        self.menu_principal.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        # Frame de entrada
+        self.frame_input = EntradaTarefaFrame(self, self.adicionar_tarefa)
+        self.frame_input.grid(row=0, column=0, padx=10, pady=10, sticky="ew")
+        self.columnconfigure(0, weight=1)
 
-        self.lista_tarefas = ListaTarefas(self, self.db)
-        self.lista_tarefas.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        # Frame de filtros
+        self.frame_filtros = FiltrosTarefa(self, self.recarregar_tarefas)
+        self.frame_filtros.grid(row=1, column=0, padx=10, pady=(0, 10), sticky="ew")
 
-    # ---------- callbacks ----------
-    def adicionar_tarefa(self, nome: str):
-        """Insere no TinyDB e avisa o frame da lista para recarregar."""
-        self.tabela.insert({"nome": nome})
-        self.lista_tarefas.atualizar()
+        # Frame scrollable para tarefas
+        self.frame_lista = ctk.CTkScrollableFrame(self)
+        self.frame_lista.grid(row=2, column=0, padx=10, pady=10, sticky="nsew")
+        self.frame_lista.columnconfigure(0, weight=1)
+
+        self.recarregar_tarefas()
+
+
+    def adicionar_tarefa(self, nome):
+        GERENCIADOR.adicionar(nome)
+        self.recarregar_tarefas()
+
+    def recarregar_tarefas(self):
+        # Limpar tarefas anteriores
+        for widget in self.frame_lista.winfo_children():
+            widget.destroy()
+
+        tarefas = GERENCIADOR.buscar_todas()
+        if self.frame_filtros.is_concluido_ativo() and self.frame_filtros.is_pendente_ativo():
+            pass
+        elif self.frame_filtros.is_concluido_ativo():
+            tarefas = [t for t in tarefas if t["status"] == "Concluído"]
+        elif self.frame_filtros.is_pendente_ativo():
+            tarefas = [t for t in tarefas if t["status"] == "Pendente"]
+
+        for i, tarefa in enumerate(tarefas):
+            tarefa_frame = TarefaFrame(self.frame_lista, tarefa, GERENCIADOR.db, self.recarregar_tarefas)
+            tarefa_frame.grid(row=i, column=0, pady=5, sticky="ew")
 
 
 if __name__ == "__main__":
-    # tema escuro / claro; mude se quiser
-    ctk.set_appearance_mode("dark")            # "light" ou "dark"
-    ctk.set_default_color_theme("blue")        # "blue", "dark-blue", "green"...
+    ctk.set_appearance_mode("dark")
+    ctk.set_default_color_theme("blue")
     App().mainloop()
