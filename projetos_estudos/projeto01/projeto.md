@@ -14,9 +14,13 @@ Criar um programa que permita:
 O Projeto vamos construir usando apenas python .... as atividades vão ficar gravadas em json assim podemos converter elas em excel ou outro formato se quisermos. para esse app vamos usar somente dois arquivos python onde um controla as funções da aplicação o [funcoes.py](funcoes.py),  e outro controla a interface da aplicação o [app.py](app.py)
 
 Vamos precisar de algumas funções e recursos listados abaixo: 
-- [ ] - Conectar no banco
-- [ ] - CRUDS atividades 
+- [X] - Conectar no banco
+- [X] - CRUDS atividades
+- [X] - Tela pra adicionar as tareffas e para manipular elas  
 
 ## Requisitos: 
 * tinydb - Dados 
 * customrkinter - Interface 
+
+## Resumo experiencia:
+Esse aplicvativo me permitiu conhecer melhro estrutura do tkinter e do tkintercostumer que é uma variação mais bunitinha dele .. alem de me presentiar com o desafio de conectar a um "banco" de dados por mais que seja em TXT a execução de querrys e de conceito estrutural e improtante 
