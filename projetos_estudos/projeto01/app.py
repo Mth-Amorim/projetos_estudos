@@ -6,7 +6,7 @@ from tkinter import messagebox
 
 ARQUIVO_DB = "tarefas.json"      # arquivo onde o TinyDB grava os dados
 
-class ListaTarefas(ctk.CTkFrame):
+class ListaTarefas(ctk.CTkScrollableFrame):
     """Frame que exibe a lista; recebe o TinyDB injetado pelo App."""
     def __init__(self, master, db: TinyDB):
         super().__init__(master)
@@ -18,7 +18,6 @@ class ListaTarefas(ctk.CTkFrame):
         # Listbox moderno do CustomTkinter (>= 5.x).  Para versões 4.x use ctk.CTkTextbox.
         self.listbox = customtkinter.CTkTextbox(self, width=280, height=230)
         self.listbox.configure(state="disabled")
-
 
         self.atualizar()           # carrega tarefas quando o frame nasce
 
@@ -50,6 +49,17 @@ class MenuPrincipal(ctk.CTkFrame):
             return
         self.on_add(tarefa)          # grava no banco e atualiza lista
         self.entrada.delete(0, ctk.END)
+
+
+class RowTarefa(ctk.CTkFrame):
+    """Representa uma linha de tarefa na lista; não usada neste exemplo."""
+    def __init__(self, master, tarefa: str):
+        super().__init__(master)
+
+        self.label = ctk.CTkLabel(self, text=tarefa)
+        self.label.pack(side="left", padx=10, pady=5)
+        
+        # Aqui poderiam ser adicionados botões para editar ou excluir a tarefa
 
 
 class App(ctk.CTk):
